@@ -1,8 +1,6 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include <stdbool.h> 
-
 #define MSG_LEN 64
 
 typedef struct expression {
@@ -15,7 +13,7 @@ typedef struct expression {
 
 void calculate(EXPRESSION * expression);
 
-bool valid_range(EXPRESSION * exp);
+int invalid_range(EXPRESSION exp);
 
 int format_input (char * input_str, EXPRESSION  * exp);
 

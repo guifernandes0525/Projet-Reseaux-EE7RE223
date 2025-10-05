@@ -41,11 +41,11 @@ void calculate(EXPRESSION * exp)  {
     }
 }
 
-bool valid_range(EXPRESSION * exp) {
-    if (exp->op1 < 0 || exp->op1 > 10000 || exp->op2 < 0 || exp->op2 > 10000)
-        return true;
+int invalid_range(EXPRESSION exp) {
+    if (exp.op1 < 0 || exp.op1 > 10000 || exp.op2 < 0 || exp.op2 > 10000)
+        return 1;
     else
-        return false;
+        return 0;
 }
 
 int quit(char *input_str) {    

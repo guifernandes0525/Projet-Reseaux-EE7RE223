@@ -8,32 +8,25 @@
 #include <ctype.h>
 #include "calculator.h"
 
-#define INIT_PORT 22000
 #define BUFF_LEN 1024
 #define MAX_CLIENT 10
+#define MAX_PORT_LEN 32
 
 int main(int argc, char *argv[]) {
 
     int serv_port = -1;
 
-    char serv_port_str[MSG_LEN];
-    // validate the number of arguments given
-    do {
-        printf("It is necessary to inform a valid server Port (>22000): \n");
-        scanf("%s", serv_port_str);
-        serv_port = atoi(serv_port_str);
-    } while(serv_port < 22000);
+    if (argc < 2 || atoi(argv[1]) < 22000){
+        do {
+            printf("It is necessary to inform a valid server Port (>22000): \n");
+            scanf("%d", &serv_port);
 
-    if (argc < 2){
+        } while(serv_port < 22000);
     }
-    else {
-        serv_port = atoi(argv[1]);
-    }
-    // server file descriptor
     int server_fd;
 
-    // might need to change the AF_INET to local
-    server_fd = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM is TCP
+    // SOCK_STREAM is TCP
+    server_fd = socket(AF_INET, SOCK_STREAM, 0); 
     
     if (server_fd == -1) {
         return -1;
@@ -76,9 +69,9 @@ int main(int argc, char *argv[]) {
         
         pid_t pid = fork();
 
-        if (pid == 0) { // this is the child process
+        if (pid == 0) { 
             
-            close(server_fd); // child doesn’t need listener
+            close(server_fd); 
 
             // Buffer
             char in_buffer[BUFF_LEN];
@@ -89,14 +82,27 @@ int main(int argc, char *argv[]) {
             
             while (1) {
                 read(calc_socket, in_buffer, BUFF_LEN);
-                // do not trust user, il est con! lower and remove ' ' from string.
+
                 clean_input(in_buffer);
                 
-                if (quit(in_buffer))
+                if (quit(in_buffer)){
+                    strcpy(out_buffer,"bye\n");
+                    write(calc_socket, out_buffer, BUFF_LEN);
                     break;
+                }
                 
-                
-
+                if (format_input(in_buffer, &expression)) {
+                    strcpy(out_buffer,"Input format invalid.\n");
+                    write(calc_socket, out_buffer, BUFF_LEN);
+                }
+                else if (invalid_range(expression)) {
+                    strcpy(out_buffer,"Invalid range. Valid range is (0-10000).\n");
+                    write(calc_socket, out_buffer, BUFF_LEN);
+                }
+                else{
+                    calculate(&expression);
+                    snprintf(out_buffer, BUFF_LEN, "%s%.2f\n", expression.message, expression.result);
+                }
                 write(calc_socket, out_buffer, BUFF_LEN);
 
             }
@@ -106,7 +112,6 @@ int main(int argc, char *argv[]) {
         }
         else if (pid > 0) { // this is the father process
             close(calc_socket);
-
         }
         else {
             close(calc_socket);
