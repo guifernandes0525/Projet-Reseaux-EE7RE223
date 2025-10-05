@@ -91,17 +91,19 @@ int main(int argc, char *argv[]) {
 
                 clean_input(recv_buffer);
                 
+                int m;
                 if (format_input(recv_buffer, &expression)) {
-                    strcpy(send_buffer,"Invalid input format.\n");
+                    
+                    m = snprintf(send_buffer, BUFF_LEN, "Invalid input format.\n");
                 }
                 else if (invalid_range(expression)) {
-                    strcpy(send_buffer,"Invalid range. Valid range is (0-10000).\n");
+                    m = snprintf(send_buffer, BUFF_LEN, "Invalid range. Valid range is (0-10000).\n");
                 }
                 else{
                     calculate(&expression);
-                    snprintf(send_buffer, BUFF_LEN, "%s%.2f\n", expression.message, expression.result);
+                    m = snprintf(send_buffer, BUFF_LEN, "%s%.2f\n", expression.message, expression.result);
                 }
-                send(calc_socket, send_buffer, BUFF_LEN, 0);
+                send(calc_socket, send_buffer, (size_t) m, 0);
 
 
             
