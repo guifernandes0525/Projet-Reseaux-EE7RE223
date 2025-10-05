@@ -67,19 +67,17 @@ int main(int argc, char* argv[]) {
         if (strcmp(send_buffer, "quit") == 0) break;
 
         size_t len = strlen(send_buffer);
-        if (write(client_socket, send_buffer, len) == -1) {
+        if (send(client_socket, send_buffer, len, 0) == -1) {
             printf("Error during message sending\n");
             break;
         }
 
-        ssize_t n = read(client_socket, recv_buffer, 1023);
+        ssize_t n = recv(client_socket, recv_buffer, 1023, 0);
         if (n <= 0) {
             printf("Error during message reception\n");
             break;
         }
         recv_buffer[n] = '\0';
-
-        recv_buffer[1024 - 1] = '\0';
 
         printf("%s\n", recv_buffer);
     }

@@ -80,14 +80,14 @@ void clean_input(char *input_str) {
     size_t j = 0;
     for (size_t i = 0; input_str[i]; i++) {
         if (input_str[i] != ' ' && input_str[i] != '\n'){ 
-            if ((input_str[i] >= '0' && input_str[i] <= '9') || input_str[i] == '.'){ 
-                if (input_str[i] == '+' || input_str[i] == '-' || 
-                    input_str[i] == '*' || input_str[i] == '/'){ 
+            if ((input_str[i] >= '0' && input_str[i] <= '9') || input_str[i] == '.'
+                 || input_str[i] == '+' || input_str[i] == '-' 
+                 || input_str[i] == '*' || input_str[i] == '/'){
                     
-                        input_str[j++] = tolower(input_str[i]);
-                }        
+                input_str[j++] = tolower(input_str[i]);
             }        
-        }
+        }        
     }
+    
     input_str[j] = '\0';
 }
