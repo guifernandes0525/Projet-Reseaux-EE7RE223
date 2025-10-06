@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <arpa/inet.h>
+#include <sys/time.h>
+#include <errno.h>
 
 #include "calculator.h"
 
@@ -16,13 +18,17 @@
 
 int main(int argc, char *argv[]) {
 
+    struct timeval timeout;
+    timeout.tv_sec = 300;
+    timeout.tv_usec = 0;
+
     int serv_port = -1;
 
-    if (argc < 2 || atoi(argv[1]) < 22000){
+    if (argc < 3 || atoi(argv[1]) < 22000 || atoi(argv[2]) < 0){
         do {
-            printf("It is necessary to inform a valid server Port (>22000): \n");
-            scanf("%d", &serv_port);
-        } while(serv_port < 22000);
+            printf("It is necessary to inform a valid server Port (>22000) or valid timeout (>0): \n");
+            scanf("%d %d", &serv_port, (int*) &timeout.tv_sec);
+        } while(serv_port < 22000 || &timeout.tv_sec < 0);
     }
     else serv_port = atoi(argv[1]);
 
@@ -62,7 +68,13 @@ int main(int argc, char *argv[]) {
     {
         int calc_socket;
         socklen_t client_addr_size = sizeof(client_address);
-        calc_socket = accept(server_fd, (struct sockaddr *) &client_address, &client_addr_size); 
+        calc_socket = accept(server_fd, (struct sockaddr *) &client_address, &client_addr_size);
+
+        printf("[+] %s\n", inet_ntoa(client_address.sin_addr));
+
+        if (setsockopt(calc_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+            printf("Problem setting socket option");
+        }
         
         if (calc_socket == -1) {
             printf("Problem accepting connection");
@@ -74,6 +86,8 @@ int main(int argc, char *argv[]) {
             
             close(server_fd); 
 
+            int Inactivity = 0;
+
             char send_buffer[BUFF_LEN];
             char recv_buffer[BUFF_LEN];
 
@@ -84,8 +98,15 @@ int main(int argc, char *argv[]) {
 
                 if (n == 0) break;
 
-                if (n < 0) { // error
-                    printf("Error reading recv_buffer\n");
+                if (n < 0) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        const char *timeout_msg = "Timeout: you've been kicked for inactivty.\n";
+                        send(calc_socket, timeout_msg, strlen(timeout_msg), 0);
+                        printf("[-] %s (Inactivity)\n", inet_ntoa(client_address.sin_addr));
+                        Inactivity = 1;
+                    } else {
+                        printf("Error during reception");
+                    }
                     break;
                 }
 
@@ -109,6 +130,8 @@ int main(int argc, char *argv[]) {
             }
 
             close(calc_socket);
+
+            if (!Inactivity) printf("[-] %s (Deconnection)\n", inet_ntoa(client_address.sin_addr));
 
             exit(0);
 
