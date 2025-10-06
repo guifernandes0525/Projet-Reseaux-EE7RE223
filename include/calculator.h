@@ -15,7 +15,7 @@ void calculate(EXPRESSION * expression);
 
 int invalid_range(EXPRESSION exp);
 
-int format_input (char * input_str, EXPRESSION  * exp);
+int format_input (char * input_str, EXPRESSION  * exp, char* IP_client);
 
 void clean_input(char *input_str);
 

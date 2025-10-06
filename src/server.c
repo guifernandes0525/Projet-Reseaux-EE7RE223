@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <arpa/inet.h>
+
 #include "calculator.h"
 
 #define BUFF_LEN 1024
@@ -92,7 +94,7 @@ int main(int argc, char *argv[]) {
                 clean_input(recv_buffer);
                 
                 int m;
-                if (format_input(recv_buffer, &expression)) {
+                if (format_input(recv_buffer, &expression, inet_ntoa(client_address.sin_addr))) {
                     
                     m = snprintf(send_buffer, BUFF_LEN, "Invalid input format.\n");
                 }
@@ -104,9 +106,6 @@ int main(int argc, char *argv[]) {
                     m = snprintf(send_buffer, BUFF_LEN, "%s%.2f\n", expression.message, expression.result);
                 }
                 send(calc_socket, send_buffer, (size_t) m, 0);
-
-
-            
             }
 
             close(calc_socket);

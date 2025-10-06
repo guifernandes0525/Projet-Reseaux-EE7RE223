@@ -55,12 +55,12 @@ int quit(char *input_str) {
         return 0;
 };
 
-int format_input (char * input_str, EXPRESSION * exp) { 
+int format_input (char * input_str, EXPRESSION * exp, char* IP_client) { 
     // check if input has structure "op1 operator op2, otherwise will write "invalid exp" message" 
     float op1, op2;
     char operator;
 
-    printf("%s\n", input_str);
+    printf("%s : %s\n", IP_client, input_str);
     if (sscanf(input_str, "%f%c%f", &op1, &operator, &op2) != 3){ // this will do the trick for now
         strcpy(exp->message,"Error in the format of the expression!\n");
         return -1; // Parsing failed due to too much elements
